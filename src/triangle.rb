@@ -4,6 +4,12 @@ class Triangle
   attr_reader :points
   def initialize(a, b, c)
     @points = [a, b, c]
+    @v0 = c - a
+    @v1 = b - a
+    @dot00 = @v0.dot(@v0)
+    @dot01 = @v0.dot(@v1)
+    @dot11 = @v1.dot(@v1)
+    @invDenom = 1.0 / (@dot00 * @dot11 - @dot01 * @dot01);
   end
 
   def range_x
@@ -18,18 +24,14 @@ class Triangle
     [points.map { |p| p[2] }.min.floor, points.map { |p| p[2] }.max.ceil]
   end
 
-  def is_same_side?(a, b, c, point)
-    ab = b - a
-    ac = c - a
-    ap = point - a
-    v1 = ab.cross(ac)
-    v2 = ap.cross(ac)
-    return v1.dot(v2) >= 0
-  end
-
   def contains?(point)
-    return is_same_side?(points[0], points[1], points[2], point) &&
-      is_same_side?(points[1], points[2], points[0], point) &&
-      is_same_side?(points[2], points[0], points[1], point)
+    v2 = point - @points[0]
+    dot02 = @v0.dot(v2)
+    dot12 = @v1.dot(v2)
+    u = (@dot11 * dot02 - @dot01 * dot12) * @invDenom
+    return false if (u < 0 || u > 1)
+    v = (@dot00 * dot12 - @dot01 * dot02) * @invDenom
+    return false if (v < 0 || v > 1)
+    return true
   end
 end

@@ -32,7 +32,9 @@ class Raster
       (triangle.range_x[0]..triangle.range_x[1]).step(@step) do |x|
         (triangle.range_y[0]..triangle.range_y[1]).step(@step) do |y|
           (triangle.range_z[0]..triangle.range_z[1]).step(@step) do |z|
-            @bitmap[(x + @offset[0]).div(@step)][(y + @offset[1]).div(@step)][(z + @offset[2]).div(@step)] = rasterize_pixel(x, y, z, triangle)
+            bitmap_x, bitmap_y, bitmap_z = (x + @offset[0]).div(@step), (y + @offset[1]).div(@step), (z + @offset[2]).div(@step)
+            next if @bitmap[bitmap_x][bitmap_y][bitmap_z] > 0 # Early-Z
+            @bitmap[bitmap_x][bitmap_y][bitmap_z] = rasterize_pixel(x, y, z, triangle)
           end
         end
       end
@@ -41,7 +43,6 @@ class Raster
   end
 
   def rasterize_pixel(x, y, z, triangle)
-    return 1 if @bitmap[x][y][z] == 1 # Early-Z
     center = Vector[
       (x * 2 + @step) / 2,
       (y * 2 + @step) / 2,
